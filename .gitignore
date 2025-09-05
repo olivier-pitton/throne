@@ -1,0 +1,81 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### XML Files ###
+*.xml
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+### Windows ###
+ehthumbs.db
+Thumbs.db
+
+### OCR Application Specific ###
+# Output files
+output.csv
+*.csv
+results.csv
+
+# Test images (keep folder structure, ignore image content)
+src/test/resources/img/*.png
+src/test/resources/img/*.jpg
+src/test/resources/img/*.jpeg
+src/test/resources/img/*.tiff
+src/test/resources/img/*.tif
+src/test/resources/img/*.bmp
+src/test/resources/img/*.gif
+
+# Temporary OCR files
+tesseract_output/
+extracted_text/
+*.tmp
+*.temp
+
+# Log files
+*.log
+
+# Backup files
+*.bak
+*.backup
+
+# JUnit test reports
+TEST-*.xml
+
+# Coverage reports
+jacoco.exec
+*.exec
