@@ -3,7 +3,7 @@
 # OCR Batch Processing Script
 # Usage: ./run-ocr.sh <folder> [output.csv] [language]
 
-JAR_FILE="target/throne-1.0-SNAPSHOT-fat.jar"
+JAR_FILE="throne-1.0-SNAPSHOT-fat.jar"
 
 # Check if JAR exists
 if [ ! -f "$JAR_FILE" ]; then

@@ -2,7 +2,7 @@
 REM OCR Batch Processing Script for Windows
 REM Usage: run-ocr.bat <folder> [output.csv] [language]
 
-set JAR_FILE=target\throne-1.0-SNAPSHOT-fat.jar
+set JAR_FILE=throne-1.0-SNAPSHOT-fat.jar
 
 REM Check if JAR exists
 if not exist "%JAR_FILE%" (
