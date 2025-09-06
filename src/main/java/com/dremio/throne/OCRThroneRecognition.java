@@ -172,11 +172,11 @@ public class OCRThroneRecognition {
      * Clean numeric value by replacing OCR errors and removing non-digit characters.
      *
      * @param value Raw numeric value
-     * @return Clean numeric string (digits only)
+     * @return Clean numeric string (digits only, "0" for blank values)
      */
     private String cleanNumericValue(String value) {
         if (value == null || value.trim().isEmpty()) {
-            return "";
+            return "0";
         }
 
         String cleaned = value.trim();
@@ -192,6 +192,11 @@ public class OCRThroneRecognition {
 
         // Keep only digits
         cleaned = cleaned.replaceAll("[^0-9]", "");
+
+        // If after cleaning we have an empty string, return "0"
+        if (cleaned.isEmpty()) {
+            return "0";
+        }
 
         return cleaned;
     }

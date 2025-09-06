@@ -85,6 +85,22 @@ public class OCRThroneRecognitionTest {
         assertEquals("Should replace standalone L and o correctly", expected, result.get(0));
         LOGGER.info("✅ Combined replacement test passed: " + result.get(0));
     }
+
+    @Test
+    public void testBlankValueHandling() {
+        OCRThroneRecognition recognition = new OCRThroneRecognition();
+
+        LOGGER.info("=== Blank Value Handling Test ===");
+
+        // Test case: Line with blank/empty numeric columns (6 columns total)
+        String input = "Player | Rouge |  | 90 |  | 456 789 | 123";
+        List<String> result = recognition.extractToCSV(input);
+
+        assertEquals("Should extract one line", 1, result.size());
+        String expected = "Player,0,90,0,456789,123"; // Blank values become '0'
+        assertEquals("Should replace blank values with 0", expected, result.get(0));
+        LOGGER.info("✅ Blank value test passed: " + result.get(0));
+    }
     
     @Test
     public void testMultipleLines() {
