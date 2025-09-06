@@ -2,6 +2,7 @@ package com.dremio.throne;
 
 import org.junit.Test;
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
@@ -17,13 +18,19 @@ public class OCRFileProcessorTest {
     
     @Test
     public void testProcessAllImagesWithFrenchOCR() throws Exception {
-        // Setup
-        String imageFolder = "src/test/resources/img";
-        File imgDir = new File(imageFolder);
+        // Get img folder from classpath
+        java.net.URL imgUrl = getClass().getClassLoader().getResource("img");
+
+        if (imgUrl == null) {
+            LOGGER.warning("Test image folder not found in classpath: /img");
+            return; // Skip test if folder doesn't exist
+        }
+
+        File imgDir = new File(imgUrl.toURI());
 
         // Verify test folder exists
         if (!imgDir.exists() || !imgDir.isDirectory()) {
-            LOGGER.warning("Test image folder not found: " + imageFolder);
+            LOGGER.warning("Test image folder not accessible: " + imgDir.getAbsolutePath());
             return; // Skip test if folder doesn't exist
         }
 
@@ -36,11 +43,12 @@ public class OCRFileProcessorTest {
         });
 
         if (imageFiles == null || imageFiles.length == 0) {
-            LOGGER.warning("No image files found in: " + imageFolder);
+            LOGGER.warning("No image files found in: " + imgDir.getAbsolutePath());
             return;
         }
 
         LOGGER.info("=== OCR File Processor Test - All Images ===");
+        LOGGER.info("Image folder: " + imgDir.getAbsolutePath());
         LOGGER.info("Found " + imageFiles.length + " images to process");
 
         // Create French OCR service
