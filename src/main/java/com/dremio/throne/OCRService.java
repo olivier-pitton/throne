@@ -2,15 +2,11 @@ package com.dremio.throne;
 
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
-
 import java.io.File;
-
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 /**
- * OCR Service using Tesseract OCR engine via Tess4J wrapper.
- * Provides text extraction capabilities from images.
+ * OCR Service using Tesseract for text extraction from images.
  */
 public class OCRService {
     
@@ -18,32 +14,19 @@ public class OCRService {
     private final Tesseract tesseract;
     
     /**
-     * Constructor that initializes the Tesseract instance with specified language.
-     *
-     * @param language Language code for OCR (e.g., "eng", "fra", "deu", "spa")
+     * Initialize OCR service with specified language.
+     * 
+     * @param language OCR language code (e.g., "eng", "fra", "deu")
      */
     public OCRService(String language) {
         this.tesseract = new Tesseract();
-        tesseract.setLanguage(language);
-
-        // Optional: Set tessdata path if you have custom location
-        // tesseract.setDatapath("/path/to/tessdata");
-
-
-    }
-
-    /**
-     * Constructor that allows custom tessdata path and language.
-     *
-     * @param language Language code for OCR (e.g., "eng", "fra", "deu", "spa")
-     * @param tessdataPath Path to the tessdata directory containing language files
-     */
-    public OCRService(String language, String tessdataPath) {
-        this.tesseract = new Tesseract();
-        tesseract.setDatapath(tessdataPath);
-        tesseract.setLanguage(language);
-
-        LOGGER.info("OCR Service initialized with language: " + language + " and tessdata path: " + tessdataPath);
+        this.tesseract.setLanguage(language);
+        
+        // Set tessdata path if available
+        String tessdataPath = System.getenv("TESSDATA_PREFIX");
+        if (tessdataPath != null) {
+            this.tesseract.setDatapath(tessdataPath);
+        }
     }
     
     /**
@@ -54,8 +37,8 @@ public class OCRService {
      * @throws OCRException if OCR processing fails
      */
     public String extractText(File imageFile) throws OCRException {
-        if (imageFile == null || !imageFile.exists()) {
-            throw new OCRException("Image file does not exist: " + imageFile);
+        if (!imageFile.exists()) {
+            throw new OCRException("Image file does not exist: " + imageFile.getAbsolutePath());
         }
         
         try {
@@ -65,7 +48,7 @@ public class OCRService {
             throw new OCRException("Failed to extract text from image: " + e.getMessage(), e);
         }
     }
-
+    
     /**
      * Custom exception for OCR-related errors.
      */
@@ -73,7 +56,7 @@ public class OCRService {
         public OCRException(String message) {
             super(message);
         }
-
+        
         public OCRException(String message, Throwable cause) {
             super(message, cause);
         }
