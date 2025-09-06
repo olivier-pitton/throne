@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -15,8 +16,9 @@ import java.util.logging.Logger;
  * Usage: java OCRBatchMain <folder> [output.csv] [language]
  */
 public class OCRBatchMain {
-    
+
     private static final Logger LOGGER = Logger.getLogger(OCRBatchMain.class.getName());
+    private final Object csvWriteLock = new Object(); // Synchronization lock for CSV writing
     
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -78,74 +80,101 @@ public class OCRBatchMain {
             return 0;
         }
         
-        LOGGER.info("Found " + imageFiles.length + " image files to process");
-        
+        int numThreads = Runtime.getRuntime().availableProcessors();
+        LOGGER.info("Found " + imageFiles.length + " image files to process using " + numThreads + " threads");
+
         // Create OCR service with specified language
         OCRService ocrService = new OCRService(language);
-        
+
         // Create temporary file for aggregated OCR output
         String tempOcrFile = "temp_ocr_output.txt";
         File tempFile = new File(tempOcrFile);
         if (tempFile.exists()) {
             tempFile.delete();
         }
-        
-        int processedCount = 0;
-        
-        // Process each image using OCRFileProcessor
-        for (File imageFile : imageFiles) {
-            try {
-                LOGGER.info("Processing: " + imageFile.getName());
-                
-                // Create OCRFileProcessor for this image
+
+        // Create thread pool with number of available processors
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        List<Future<String>> futures = new ArrayList<>();
+        int processedCount = 0; // Declare outside try block
+
+        try {
+            // Submit all image processing tasks to thread pool
+            for (File imageFile : imageFiles) {
                 OCRFileProcessor processor = new OCRFileProcessor(
-                    imageFile.getAbsolutePath(), 
-                    ocrService, 
+                    imageFile.getAbsolutePath(),
+                    ocrService,
                     tempOcrFile
                 );
-                
-                // Process the image (appends to temp file)
-                processor.call();
-                processedCount++;
-                
-            } catch (Exception e) {
-                LOGGER.warning("Failed to process " + imageFile.getName() + ": " + e.getMessage());
+
+                Future<String> future = executor.submit(processor);
+                futures.add(future);
+                LOGGER.info("Submitted for processing: " + imageFile.getName());
+            }
+
+            // Wait for all tasks to complete and count successful ones
+            for (int i = 0; i < futures.size(); i++) {
+                try {
+                    Future<String> future = futures.get(i);
+                    String result = future.get(); // This blocks until the task completes
+                    if (result != null && !result.trim().isEmpty()) {
+                        processedCount++;
+                        LOGGER.info("Completed: " + imageFiles[i].getName());
+                    }
+                } catch (Exception e) {
+                    LOGGER.warning("Failed to process " + imageFiles[i].getName() + ": " + e.getMessage());
+                }
+            }
+
+        } finally {
+            // Shutdown thread pool
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                    LOGGER.warning("Thread pool did not terminate gracefully");
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
             }
         }
         
         // Process aggregated OCR output to CSV
         if (tempFile.exists() && tempFile.length() > 0) {
             String aggregatedOcrText = new String(java.nio.file.Files.readAllBytes(tempFile.toPath()));
-            
+
             // Use OCRThroneRecognition to extract and clean data
             OCRThroneRecognition recognition = new OCRThroneRecognition();
             List<String> csvLines = recognition.extractToCSV(aggregatedOcrText);
-            
-            // Write to output CSV
+
+            // Write to output CSV (thread-safe)
             writeCSV(csvLines, outputCsv);
-            
+
             LOGGER.info("Extracted " + csvLines.size() + " valid data lines");
         }
-        
+
         // Clean up temporary file
         if (tempFile.exists()) {
             tempFile.delete();
         }
-        
+
         return processedCount;
     }
     
     /**
-     * Write CSV lines to file.
-     * 
+     * Write CSV lines to file in a thread-safe manner.
+     *
      * @param csvLines List of CSV lines to write
      * @param filename Output filename
      * @throws IOException if writing fails
      */
     private void writeCSV(List<String> csvLines, String filename) throws IOException {
-        try (FileWriter writer = new FileWriter(filename)) {
-            for (String line : csvLines) {
-                writer.write(line + "\n");
+        synchronized (csvWriteLock) {
+            try (FileWriter writer = new FileWriter(filename)) {
+                for (String line : csvLines) {
+                    writer.write(line + "\n");
+                }
             }
         }
     }

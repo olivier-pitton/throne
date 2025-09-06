@@ -3,6 +3,7 @@ package com.dremio.throne;
 import org.junit.Test;
 import java.io.File;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
@@ -19,19 +20,17 @@ public class OCRFileProcessorTest {
     @Test
     public void testProcessAllImagesWithFrenchOCR() throws Exception {
         // Get img folder from classpath
-        java.net.URL imgUrl = getClass().getClassLoader().getResource("img");
+        URL imgUrl = getClass().getClassLoader().getResource("img");
 
         if (imgUrl == null) {
-            LOGGER.warning("Test image folder not found in classpath: /img");
-            return; // Skip test if folder doesn't exist
+            fail("Test image folder not found in classpath: /img - img folder must exist for tests to run");
         }
 
         File imgDir = new File(imgUrl.toURI());
 
         // Verify test folder exists
         if (!imgDir.exists() || !imgDir.isDirectory()) {
-            LOGGER.warning("Test image folder not accessible: " + imgDir.getAbsolutePath());
-            return; // Skip test if folder doesn't exist
+            fail("Test image folder not accessible: " + imgDir.getAbsolutePath() + " - img folder must be accessible for tests to run");
         }
 
         // Get all image files
@@ -43,12 +42,9 @@ public class OCRFileProcessorTest {
         });
 
         if (imageFiles == null || imageFiles.length == 0) {
-            LOGGER.warning("No image files found in: " + imgDir.getAbsolutePath());
-            return;
+            fail("No image files found in: " + imgDir.getAbsolutePath() + " - img folder must contain test images");
         }
 
-        LOGGER.info("=== OCR File Processor Test - All Images ===");
-        LOGGER.info("Image folder: " + imgDir.getAbsolutePath());
         LOGGER.info("Found " + imageFiles.length + " images to process");
 
         // Create French OCR service
@@ -86,10 +82,7 @@ public class OCRFileProcessorTest {
         String finalContent = new String(Files.readAllBytes(Paths.get(testOutputFile)));
         assertFalse("Final tesseract.txt should not be empty", finalContent.trim().isEmpty());
 
-        LOGGER.info("Total images processed: " + imageFiles.length);
-        LOGGER.info("Total OCR output length: " + totalOutputLength + " characters");
-        LOGGER.info("Final test output file size: " + tesseractFile.length() + " bytes");
-        LOGGER.info("✅ Test completed successfully");
+        LOGGER.info("Processed " + imageFiles.length + " images, output: " + totalOutputLength + " characters");
 
         // Clean up test file after verification
         if (tesseractFile.exists()) {
