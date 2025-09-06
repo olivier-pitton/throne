@@ -65,8 +65,8 @@ test_multithread_output.csv
 !README.md
 !INSTALLATION.md
 
-# Keep test images in main resources for classpath access
-!src/main/resources/img/
+# Keep test images in test resources (correct location)
+!src/test/resources/img/
 
 # Temporary OCR files
 tesseract_output/
