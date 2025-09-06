@@ -56,7 +56,6 @@ cleaned_output.csv
 errors.csv
 temp_ocr_output.txt
 test_output.csv
-test_multithread_output.csv
 
 # Keep important files in version control
 !src/main/resources/expected.csv

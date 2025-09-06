@@ -17,6 +17,7 @@ public class OCRThroneRecognition {
     private static final String[] COLOR_WORDS = {"rouge", "jaune", "yellow", "red"};
 
     private List<String> errorLines = new ArrayList<>();
+    private List<String> colorInfo = new ArrayList<>(); // Track color for each line
     
     /**
      * Extract relevant data from Tesseract output and convert to CSV format.
@@ -28,6 +29,7 @@ public class OCRThroneRecognition {
     public List<String> extractToCSV(String tesseractOutput) {
         List<String> csvLines = new ArrayList<>();
         errorLines.clear(); // Clear previous errors
+        colorInfo.clear(); // Clear previous color info
 
         if (tesseractOutput == null || tesseractOutput.trim().isEmpty()) {
             return csvLines;
@@ -43,6 +45,9 @@ public class OCRThroneRecognition {
                 if (columns.length == 6) {
                     // Add valid lines (numeric cleaning happens in cleanNumericValue)
                     csvLines.add(csvLine);
+                    // Track the original color for this line
+                    String detectedColor = extractColorFromLine(line.trim());
+                    colorInfo.add(detectedColor);
                 } else {
                     // Add to error lines (pure row only)
                     errorLines.add(csvLine);
@@ -75,6 +80,33 @@ public class OCRThroneRecognition {
         if (!errorLines.isEmpty()) {
             LOGGER.info("Wrote " + errorLines.size() + " error lines to errors.csv");
         }
+    }
+
+    /**
+     * Extract color information from the original line.
+     *
+     * @param line Original OCR line
+     * @return Detected color or "unknown"
+     */
+    private String extractColorFromLine(String line) {
+        String lowerLine = line.toLowerCase();
+
+        if (lowerLine.contains("rouge") || lowerLine.contains("red")) {
+            return "red";
+        } else if (lowerLine.contains("jaune") || lowerLine.contains("yellow")) {
+            return "yellow";
+        }
+
+        return "unknown";
+    }
+
+    /**
+     * Get color information for each processed line.
+     *
+     * @return List of colors corresponding to each CSV line
+     */
+    public List<String> getColorInfo() {
+        return new ArrayList<>(colorInfo);
     }
     
     /**

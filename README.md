@@ -53,43 +53,56 @@ run-ocr.bat .\images results.csv fra     # Windows
 
 ### Basic Command
 ```bash
-java -jar throne-1.0-SNAPSHOT-fat.jar <image_folder> [output_file] [language]
+java -jar throne-1.0-SNAPSHOT-fat.jar <image_folder> <language> <color> [output_file] [date]
 ```
 
 ### Parameters Explained
 | Parameter | Description | Default | Example |
 |-----------|-------------|---------|---------|
 | `image_folder` | 📁 Folder with your screenshots | *required* | `./screenshots` |
+| `language` | 🌍 OCR language code | *required* | `eng`, `fra`, `deu`, `spa` |
+| `color` | 🎨 Team color filter | *required* | `y` (yellow), `r` (red) |
 | `output_file` | 📄 Name for your CSV file | `output.csv` | `player_stats.csv` |
-| `language` | 🌍 OCR language code | `eng` | `fra`, `deu`, `spa` |
+| `date` | 📅 Date for CSV entries | current date | `2025-09-06` |
 
 ### Real Examples
 
 ```bash
-# 🇺🇸 Process English screenshots (simplest)
-java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots
+# 🟡 Process yellow team screenshots (English)
+java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots eng y
 
-# 🇫🇷 Process French screenshots with custom output
-java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots french_data.csv fra
+# 🔴 Process red team screenshots with custom output
+java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots eng r team_stats.csv
 
-# 🇩🇪 Process German screenshots
-java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots german_stats.csv deu
+# 🇫🇷 Process French screenshots for yellow team
+java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots fra y french_data.csv
+
+# 📅 Process with specific date
+java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots eng r stats.csv 2025-09-06
 ```
+
+### 🎨 Color Team System
+
+**Your Team vs Enemy Team:**
+- **`y` (Yellow)**: Lines with yellow/jaune colors → `Suits`, others → `Enemy`
+- **`r` (Red)**: Lines with red/rouge colors → `Suits`, others → `Enemy`
+
+**Example**: If you choose `y`, all yellow players become "Suits" and red players become "Enemy"
 
 ### 🛠️ Convenience Scripts (Easier!)
 
 **Linux/macOS:**
 ```bash
-./run-ocr.sh ./screenshots                    # Quick start
-./run-ocr.sh ./screenshots my_data.csv       # Custom output
-./run-ocr.sh ./screenshots my_data.csv fra   # French language
+./run-ocr.sh ./screenshots eng y                    # English, yellow team
+./run-ocr.sh ./screenshots fra r my_data.csv       # French, red team, custom output
+./run-ocr.sh ./screenshots eng y my_data.csv 2025-09-06   # English, yellow team, specific date
 ```
 
 **Windows:**
 ```cmd
-run-ocr.bat .\screenshots                     # Quick start
-run-ocr.bat .\screenshots my_data.csv        # Custom output
-run-ocr.bat .\screenshots my_data.csv fra    # French language
+run-ocr.bat .\screenshots eng y                     # English, yellow team
+run-ocr.bat .\screenshots fra r my_data.csv        # French, red team, custom output
+run-ocr.bat .\screenshots eng y my_data.csv 2025-09-06    # English, yellow team, specific date
 ```
 
 ## 🔧 How It Works (The Magic Behind the Scenes)
@@ -104,15 +117,7 @@ run-ocr.bat .\screenshots my_data.csv fra    # French language
 5. ✅ **Validates data** (keeps only rows with exactly 6 columns)
 6. 📊 **Exports clean CSV** ready for analysis
 
-## ⚡ Performance Features
 
-### 🚀 **Multi-Threading Support**
-- **Automatic CPU detection**: Uses all available processor cores
-- **Parallel processing**: Processes multiple images simultaneously
-- **Thread-safe operations**: Synchronized file writing prevents data corruption
-- **Optimal performance**: Scales with your hardware (2 cores = 2x faster, 8 cores = 8x faster!)
-
-**Example**: Processing 100 images on an 8-core machine processes ~8 images at once instead of one-by-one!
 
 ## 🛡️ Smart Error Handling
 
@@ -131,10 +136,10 @@ Your data comes out clean and ready to use!
 
 ### Main Output: `output.csv`
 ```csv
-PlayerName,Score1,Score2,Value1,Value2,Value3
-Charizma,68,48,2635209,849361,22065
-JustReky,50,62,2112643,1128903,30012
-sprad,48,82,4049870,1938548,96731
+Date,Team,PlayerName,Kills,Assists,DamageDone,DamageReceived,Healing
+2025-09-06,Suits,Charizma,68,48,2635209,849361,22065
+2025-09-06,Enemy,JustReky,50,62,2112643,1128903,30012
+2025-09-06,Suits,sprad,48,82,4049870,1938548,96731
 ```
 
 ### Error Log: `errors.csv`

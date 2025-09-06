@@ -3,6 +3,7 @@ package com.dremio.throne;
 import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.logging.Logger;
 
 import static org.junit.Assert.*;
@@ -19,7 +20,7 @@ public class OCRBatchMainTest {
         OCRBatchMain processor = new OCRBatchMain();
         
         try {
-            processor.processImages("/nonexistent/folder", "output.csv", "eng");
+            processor.processImages("/nonexistent/folder", "eng", "y", "output.csv", LocalDate.now());
             fail("Should throw IOException for non-existent folder");
         } catch (Exception e) {
             assertTrue("Should be IOException", e instanceof IOException);
@@ -35,8 +36,8 @@ public class OCRBatchMainTest {
         
         try {
             OCRBatchMain processor = new OCRBatchMain();
-            int result = processor.processImages(tempDir.getAbsolutePath(), "test_output.csv", "eng");
-            
+            int result = processor.processImages(tempDir.getAbsolutePath(), "eng", "y", "test_output.csv", LocalDate.now());
+
             assertEquals("Should return 0 for empty folder", 0, result);
             
         } finally {

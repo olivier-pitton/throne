@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 public class OCRFileProcessor implements Callable<String> {
 
     private static final Logger LOGGER = Logger.getLogger(OCRFileProcessor.class.getName());
-    private static final Object FILE_WRITE_LOCK = new Object(); // Static lock for file writing synchronization
     
     private final String filename;
     private final OCRService ocrService;
@@ -70,16 +69,14 @@ public class OCRFileProcessor implements Callable<String> {
     }
     
     /**
-     * Append the OCR output to the configured output file in a thread-safe manner.
+     * Append the OCR output to the configured output file.
      *
      * @param ocrOutput The raw OCR text to append
      * @throws IOException if file writing fails
      */
     private void writeToTesseractFile(String ocrOutput) throws IOException {
-        synchronized (FILE_WRITE_LOCK) {
-            try (FileWriter writer = new FileWriter(outputFile, true)) { // true = append mode
-                writer.write(ocrOutput);
-            }
+        try (FileWriter writer = new FileWriter(outputFile, true)) { // true = append mode
+            writer.write(ocrOutput);
         }
     }
 }
