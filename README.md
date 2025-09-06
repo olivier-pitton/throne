@@ -5,14 +5,18 @@ Java OCR application using Tesseract for batch image processing with configurabl
 ## Quick Start
 
 ```bash
-# Build runnable JAR
+# Build fat JAR with all dependencies
 mvn clean package
 
-# Run with French OCR
-java -jar target/throne-1.0-SNAPSHOT.jar fra
+# Run with English OCR (default)
+java -jar target/throne-1.0-SNAPSHOT-fat.jar ./images
 
-# Run with English OCR on custom folder
-java -jar target/throne-1.0-SNAPSHOT.jar eng /path/to/images output.csv
+# Run with custom output and French language
+java -jar target/throne-1.0-SNAPSHOT-fat.jar ./images results.csv fra
+
+# Or use the convenience script
+./run-ocr.sh ./images results.csv fra    # Linux/macOS
+run-ocr.bat .\images results.csv fra     # Windows
 ```
 
 ## Prerequisites
@@ -36,19 +40,26 @@ sudo apt-get install tesseract-ocr tesseract-ocr-fra tesseract-ocr-deu
 ## Usage
 
 ```bash
-java -jar throne.jar <language> [input_folder] [output_csv]
+java -jar target/throne-1.0-SNAPSHOT-fat.jar <folder> [output.csv] [language]
 ```
 
 **Parameters:**
-- `language` - OCR language code (eng, fra, deu, spa, ita, por, etc.)
-- `input_folder` - Image directory (default: `img`)
-- `output_csv` - Output file (default: `output.csv`)
+- `folder` - Path to folder containing images (required)
+- `output.csv` - Output CSV filename (default: `output.csv`)
+- `language` - OCR language code (default: `eng`)
 
 **Examples:**
 ```bash
-java -jar throne.jar fra                           # French, default paths
-java -jar throne.jar eng ./images                  # English, custom input
-java -jar throne.jar deu ./images results.csv      # German, custom paths
+java -jar target/throne-1.0-SNAPSHOT-fat.jar ./images                    # English, default output
+java -jar target/throne-1.0-SNAPSHOT-fat.jar ./images results.csv       # Custom output file
+java -jar target/throne-1.0-SNAPSHOT-fat.jar ./images results.csv fra   # French language
+```
+
+**Convenience Script:**
+```bash
+./run-ocr.sh ./images                    # English, default output
+./run-ocr.sh ./images results.csv       # Custom output file
+./run-ocr.sh ./images results.csv fra   # French language
 ```
 
 ## What It Does

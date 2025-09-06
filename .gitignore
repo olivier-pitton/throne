@@ -54,9 +54,13 @@ tesseract.txt
 test_tesseract_output.txt
 cleaned_output.csv
 errors.csv
+temp_ocr_output.txt
+test_output.csv
 
-# Keep expected.csv in version control
+# Keep expected.csv and run scripts in version control
 !src/main/resources/expected.csv
+!run-ocr.sh
+!run-ocr.bat
 
 # Test images (keep folder structure, ignore image content)
 src/test/resources/img/*.png
