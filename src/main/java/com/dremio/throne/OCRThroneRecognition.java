@@ -209,7 +209,7 @@ public class OCRThroneRecognition {
      * @param nameColumn Raw name column value
      * @return Clean player name (alphanumeric only)
      */
-    private String extractPlayerName(String nameColumn) {
+    public static String extractPlayerName(String nameColumn) {
         if (nameColumn == null || nameColumn.trim().isEmpty()) {
             return "";
         }
@@ -219,6 +219,8 @@ public class OCRThroneRecognition {
         
         // Additional cleaning for common OCR artifacts
         cleanName = cleanName.replaceAll("^[0-9]+", ""); // Remove leading numbers
+
+        cleanName = PlayerNameMatcher.match(cleanName);
 
         return cleanName.trim();
     }
