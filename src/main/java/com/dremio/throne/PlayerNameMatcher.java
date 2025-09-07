@@ -9,7 +9,7 @@ public class PlayerNameMatcher {
     private static final Set<String> ELYEAT = Set.of("elveat");
     private static final Set<String> PRAD = Set.of("xpradel");
     private static final Set<String> FXT = Set.of("fxt1", "fxti", "fxtl");
-    
+
     public static String match(String name) {
         String lowercase = name.toLowerCase();
         if (GAIA.contains(lowercase)) {
