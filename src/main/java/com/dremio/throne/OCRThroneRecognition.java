@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -55,25 +56,47 @@ public class OCRThroneRecognition {
             }
         }
 
-        // Write errors to file
-        try {
-            writeErrorsToFile();
-        } catch (IOException e) {
-            LOGGER.warning("Failed to write errors.csv: " + e.getMessage());
-        }
+        // Note: Error file writing is now handled in OCRBatchMain with proper formatting
 
         return csvLines;
     }
 
     /**
-     * Write error lines to errors.csv file (no header, pure lines only).
+     * Write error lines to errors.csv file with date, guild, and class information.
      *
+     * @param date Date to prepend to each error line
+     * @param guild Guild name for team assignment
+     * @param playerClasses Map of player names to their classes
      * @throws IOException if file writing fails
      */
-    private void writeErrorsToFile() throws IOException {
+    public void writeErrorsToFile(String date, String guild, Map<String, String> playerClasses) throws IOException {
         try (FileWriter writer = new FileWriter("errors.csv")) {
             for (String errorLine : errorLines) {
-                writer.write(errorLine + "\n");
+                String[] parts = errorLine.split(",");
+                if (parts.length > 0) {
+                    // Extract player name (first column)
+                    String playerName = parts[0];
+
+                    // Get player class from map or default to UNKNOWN (case-insensitive lookup)
+                    String playerClass = PlayerClassLoader.getPlayerClass(playerName, playerClasses);
+
+                    // Build error line with same format as main output: date,guild,playerName,playerClass,stats...
+                    StringBuilder formattedErrorLine = new StringBuilder();
+                    formattedErrorLine.append(date).append(",");
+                    formattedErrorLine.append(guild).append(",");
+                    formattedErrorLine.append(playerName).append(",");
+                    formattedErrorLine.append(playerClass);
+
+                    // Add remaining stats
+                    for (int i = 1; i < parts.length; i++) {
+                        formattedErrorLine.append(",").append(parts[i]);
+                    }
+
+                    writer.write(formattedErrorLine.toString() + "\n");
+                } else {
+                    // Fallback for malformed lines
+                    writer.write(date + "," + guild + ",UNKNOWN,UNKNOWN," + errorLine + "\n");
+                }
             }
         }
 

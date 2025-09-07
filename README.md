@@ -53,7 +53,7 @@ run-ocr.bat .\images results.csv fra     # Windows
 
 ### Basic Command
 ```bash
-java -jar throne-1.0-SNAPSHOT-fat.jar <image_folder> <language> <color> [output_file] [date]
+java -jar throne-1.0-SNAPSHOT-fat.jar <image_folder> <language> <color> [guild] [output_file] [date]
 ```
 
 ### Parameters Explained
@@ -62,6 +62,7 @@ java -jar throne-1.0-SNAPSHOT-fat.jar <image_folder> <language> <color> [output_
 | `image_folder` | 📁 Folder with your screenshots | *required* | `./screenshots` |
 | `language` | 🌍 OCR language code | *required* | `eng`, `fra`, `deu`, `spa` |
 | `color` | 🎨 Team color filter | *required* | `y` (yellow), `r` (red) |
+| `guild` | 🏰 Enemy guild name | `Enemy` | `Dragons`, `Phoenix` |
 | `output_file` | 📄 Name for your CSV file | `output.csv` | `player_stats.csv` |
 | `date` | 📅 Date for CSV entries | current date | `2025-09-06` |
 
@@ -71,14 +72,14 @@ java -jar throne-1.0-SNAPSHOT-fat.jar <image_folder> <language> <color> [output_
 # 🟡 Process yellow team screenshots (English)
 java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots eng y
 
-# 🔴 Process red team screenshots with custom output
-java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots eng r team_stats.csv
+# 🔴 Process red team screenshots with custom guild
+java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots eng r Dragons
 
-# 🇫🇷 Process French screenshots for yellow team
-java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots fra y french_data.csv
+# 🇫🇷 Process French screenshots for yellow team with custom output
+java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots fra y Phoenix team_stats.csv
 
 # 📅 Process with specific date
-java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots eng r stats.csv 2025-09-06
+java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots eng r Dragons stats.csv 2025-09-06
 ```
 
 ### 🎨 Color Team System
@@ -87,22 +88,39 @@ java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots eng r stats.csv 2025-09-06
 - **`y` (Yellow)**: Lines with yellow/jaune colors → `Suits`, others → `Enemy`
 - **`r` (Red)**: Lines with red/rouge colors → `Suits`, others → `Enemy`
 
-**Example**: If you choose `y`, all yellow players become "Suits" and red players become "Enemy"
+**Example**: If you choose `y`, all yellow players become "Suits" and red players become your guild name
+
+### 🎭 Player Class System
+
+**Optional class.csv file:**
+- **Format**: `PlayerName,Class` (one per line)
+- **Location**: Same directory as the JAR file
+- **Behavior**:
+  - If file exists → Loads player classes and includes them in output
+  - If file missing → Shows warning, all players get "UNKNOWN" class
+
+**Example class.csv:**
+```csv
+Charizma,Warrior
+JustReky,Mage
+sprad,Archer
+Bilthuat,Paladin
+```
 
 ### 🛠️ Convenience Scripts (Easier!)
 
 **Linux/macOS:**
 ```bash
 ./run-ocr.sh ./screenshots eng y                    # English, yellow team
-./run-ocr.sh ./screenshots fra r my_data.csv       # French, red team, custom output
-./run-ocr.sh ./screenshots eng y my_data.csv 2025-09-06   # English, yellow team, specific date
+./run-ocr.sh ./screenshots fra r Dragons           # French, red team, Dragons guild
+./run-ocr.sh ./screenshots eng y Phoenix my_data.csv 2025-09-06   # Full example
 ```
 
 **Windows:**
 ```cmd
 run-ocr.bat .\screenshots eng y                     # English, yellow team
-run-ocr.bat .\screenshots fra r my_data.csv        # French, red team, custom output
-run-ocr.bat .\screenshots eng y my_data.csv 2025-09-06    # English, yellow team, specific date
+run-ocr.bat .\screenshots fra r Dragons           # French, red team, Dragons guild
+run-ocr.bat .\screenshots eng y Phoenix my_data.csv 2025-09-06    # Full example
 ```
 
 ## 🔧 How It Works (The Magic Behind the Scenes)
@@ -136,10 +154,10 @@ Your data comes out clean and ready to use!
 
 ### Main Output: `output.csv`
 ```csv
-Date,Team,PlayerName,Kills,Assists,DamageDone,DamageReceived,Healing
-2025-09-06,Suits,Charizma,68,48,2635209,849361,22065
-2025-09-06,Enemy,JustReky,50,62,2112643,1128903,30012
-2025-09-06,Suits,sprad,48,82,4049870,1938548,96731
+Date,Team,PlayerName,PlayerClass,Kills,Assists,DamageDone,DamageReceived,Healing
+2025-09-07,Suits,Charizma,Warrior,68,48,2635209,849361,22065
+2025-09-07,Enemy,JustReky,Mage,50,62,2112643,1128903,30012
+2025-09-07,Suits,sprad,Archer,48,82,4049870,1938548,96731
 ```
 
 ### Error Log: `errors.csv`
