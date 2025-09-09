@@ -64,7 +64,7 @@ java -jar throne-1.0-SNAPSHOT-fat.jar <image_folder> <language> <color> [guild] 
 | `color` | 🎨 Team color filter | *required* | `y` (yellow), `r` (red) |
 | `guild` | 🏰 Enemy guild name | `Enemy` | `Dragons`, `Phoenix` |
 | `output_file` | 📄 Name for your CSV file | `output.csv` | `player_stats.csv` |
-| `date` | 📅 Date for CSV entries | current date | `2025-09-06` |
+| `date` | 📅 Date/time for CSV entries | current date/time | `2025-09-06`, `2025-09-06 21:30` |
 
 ### Real Examples
 
@@ -78,8 +78,8 @@ java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots eng r Dragons
 # 🇫🇷 Process French screenshots for yellow team with custom output
 java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots fra y Phoenix team_stats.csv
 
-# 📅 Process with specific date
-java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots eng r Dragons stats.csv 2025-09-06
+# 📅 Process with specific date and time
+java -jar throne-1.0-SNAPSHOT-fat.jar ./screenshots eng r Dragons stats.csv "2025-09-06 21:30"
 ```
 
 ### 🎨 Color Team System
@@ -155,9 +155,9 @@ Your data comes out clean and ready to use!
 ### Main Output: `output.csv`
 ```csv
 Date,Team,PlayerName,PlayerClass,Kills,Assists,DamageDone,DamageReceived,Healing
-2025-09-07,Suits,Charizma,Warrior,68,48,2635209,849361,22065
-2025-09-07,Enemy,JustReky,Mage,50,62,2112643,1128903,30012
-2025-09-07,Suits,sprad,Archer,48,82,4049870,1938548,96731
+2025-09-07 00:00:00,Suits,Charizma,Warrior,68,48,2635209,849361,22065
+2025-09-07 21:30:00,Enemy,JustReky,Mage,50,62,2112643,1128903,30012
+2025-09-07 00:00:00,Suits,sprad,Archer,48,82,4049870,1938548,96731
 ```
 
 ### Error Log: `errors.csv`

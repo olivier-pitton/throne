@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # OCR Batch Processing Script
-# Usage: ./run-ocr.sh <folder> <language> <color> [output.csv] [date]
+# Usage: ./run-ocr.sh <folder> <language> <color> [guild] [output.csv] [date]
 
 JAR_FILE="throne-1.0-SNAPSHOT-fat.jar"
 
@@ -15,17 +15,19 @@ fi
 # Check if at least three arguments are provided
 if [ $# -lt 3 ]; then
     echo "OCR Batch Processing"
-    echo "Usage: $0 <folder> <language> <color> [output.csv] [date]"
+    echo "Usage: $0 <folder> <language> <color> [guild] [output.csv] [date]"
     echo ""
     echo "Parameters:"
     echo "  folder   - Path to folder containing images (required)"
     echo "  language - OCR language code (required)"
     echo "  color    - Color filter: 'y' (yellow) or 'r' (red) (required)"
+    echo "  guild    - Enemy guild name (default: Enemy)"
     echo ""
     echo "Examples:"
     echo "  $0 ./images eng y"
-    echo "  $0 ./images fra r results.csv"
-    echo "  $0 ./images eng y results.csv 2025-09-06"
+    echo "  $0 ./images fra r Dragons"
+    echo "  $0 ./images eng y Phoenix results.csv"
+    echo "  $0 ./images fra r Dragons results.csv 2025-09-06"
     exit 1
 fi
 

@@ -65,16 +65,16 @@ public class OCRBatchIntegrationTest {
             String color = "r";
             String guild = "Phoenix";
             String outputCsv = "integration_test_output.csv";
-            LocalDate date = LocalDate.parse("2025-09-07", DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String dateTimeStr = "2025-09-07 00:00:00";
             
             // Process images with complete workflow
             int processedCount = processor.processImages(
-                imgDir.getAbsolutePath(), 
-                language, 
-                color, 
-                guild, 
-                outputCsv, 
-                date, 
+                imgDir.getAbsolutePath(),
+                language,
+                color,
+                guild,
+                outputCsv,
+                dateTimeStr,
                 playerClasses
             );
             
@@ -114,6 +114,12 @@ public class OCRBatchIntegrationTest {
             File errorsFile = new File("errors.csv");
             if (errorsFile.exists()) {
                 errorsFile.delete();
+            }
+
+            // Clean up tesseract_output.txt file
+            File tesseractFile = new File("tesseract_output.txt");
+            if (tesseractFile.exists()) {
+                tesseractFile.delete();
             }
             
         } catch (Exception e) {

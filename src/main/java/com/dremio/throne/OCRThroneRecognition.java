@@ -62,27 +62,28 @@ public class OCRThroneRecognition {
     }
 
     /**
-     * Write error lines to errors.csv file with date, guild, and class information.
+     * Write error lines to errors.csv file with date/time, guild, and class information.
      *
-     * @param date Date to prepend to each error line
+     * @param dateTimeStr Date and time string to prepend to each error line
      * @param guild Guild name for team assignment
      * @param playerClasses Map of player names to their classes
      * @throws IOException if file writing fails
      */
-    public void writeErrorsToFile(String date, String guild, Map<String, String> playerClasses) throws IOException {
+    public void writeErrorsToFile(String dateTimeStr, String guild, Map<String, String> playerClasses) throws IOException {
         try (FileWriter writer = new FileWriter("errors.csv")) {
             for (String errorLine : errorLines) {
                 String[] parts = errorLine.split(",");
                 if (parts.length > 0) {
-                    // Extract player name (first column)
-                    String playerName = parts[0];
+                    // Extract and clean player name (first column)
+                    String rawPlayerName = parts[0];
+                    String playerName = PlayerNameMatcher.match(rawPlayerName);
 
                     // Get player class from map or default to UNKNOWN (case-insensitive lookup)
                     String playerClass = PlayerClassLoader.getPlayerClass(playerName, playerClasses);
 
-                    // Build error line with same format as main output: date,guild,playerName,playerClass,stats...
+                    // Build error line with same format as main output: dateTime,guild,playerName,playerClass,stats...
                     StringBuilder formattedErrorLine = new StringBuilder();
-                    formattedErrorLine.append(date).append(",");
+                    formattedErrorLine.append(dateTimeStr).append(",");
                     formattedErrorLine.append(guild).append(",");
                     formattedErrorLine.append(playerName).append(",");
                     formattedErrorLine.append(playerClass);
@@ -95,7 +96,7 @@ public class OCRThroneRecognition {
                     writer.write(formattedErrorLine.toString() + "\n");
                 } else {
                     // Fallback for malformed lines
-                    writer.write(date + "," + guild + ",UNKNOWN,UNKNOWN," + errorLine + "\n");
+                    writer.write(dateTimeStr + "," + guild + ",UNKNOWN,UNKNOWN," + errorLine + "\n");
                 }
             }
         }
