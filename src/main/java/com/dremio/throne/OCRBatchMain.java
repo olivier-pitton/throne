@@ -36,7 +36,7 @@ public class OCRBatchMain {
     String dateStr = args.length > 5 ? args[5] : null;
 
     // Validate color parameter
-    if (!color.equals("y") && !color.equals("r")) {
+    if (!color.equalsIgnoreCase("y") && !color.equalsIgnoreCase("r")) {
       LOGGER.severe("❌ Invalid color parameter: " + color + ". Must be 'y' (yellow) or 'r' (red)");
       System.exit(1);
     }
@@ -69,7 +69,7 @@ public class OCRBatchMain {
     LOGGER.info("=== OCR Batch Processing ===");
     LOGGER.info("Image folder: " + imageFolder);
     LOGGER.info("Language: " + language);
-    LOGGER.info("Color filter: " + (color.equals("y") ? "yellow" : "red") + " = Suits, other = " + guild);
+    LOGGER.info("Color filter: " + (color.equalsIgnoreCase("y") ? "yellow" : "red") + " = Suits, other = " + guild);
     LOGGER.info("Guild name: " + guild);
     LOGGER.info("Output CSV: " + outputCsv);
     LOGGER.info("Date/Time: " + dateTimeStr);
@@ -267,9 +267,9 @@ public class OCRBatchMain {
    * @return "Suits" if color matches filter, guild name otherwise
    */
   private String determineTeam(String detectedColor, String color, String guild) {
-    if (color.equals("y") && "yellow".equals(detectedColor)) {
+    if (color.equalsIgnoreCase("y") && "yellow".equalsIgnoreCase(detectedColor)) {
       return "Suits";
-    } else if (color.equals("r") && "red".equals(detectedColor)) {
+    } else if (color.equalsIgnoreCase("r") && "red".equalsIgnoreCase(detectedColor)) {
       return "Suits";
     }
 

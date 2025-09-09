@@ -97,7 +97,7 @@ public class PlayerValidator {
         }
         
         // Class-specific rules
-        if (!playerClass.equals("tank") && !playerClass.equals("healer")) {
+        if (!playerClass.equalsIgnoreCase("tank") && !playerClass.equalsIgnoreCase("healer")) {
             // Rules for non-tank, non-healer classes
             if (assists < 20) {
                 LOGGER.warning("SUSPICIOUS ASSISTS (Non-Tank/Healer): " + playerName + " (" + playerClass + ") has " + assists + " assists (<20) - " + csvLine);
@@ -120,7 +120,7 @@ public class PlayerValidator {
             }
         }
         
-        if (playerClass.equals("healer")) {
+        if (playerClass.equalsIgnoreCase("healer")) {
             // Rules specific to healers
             if (assists < 20) {
                 LOGGER.warning("SUSPICIOUS ASSISTS (Healer): " + playerName + " has " + assists + " assists (<20) - " + csvLine);
