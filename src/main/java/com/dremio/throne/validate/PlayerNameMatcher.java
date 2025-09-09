@@ -1,4 +1,4 @@
-package com.dremio.throne;
+package com.dremio.throne.validate;
 
 import java.util.Set;
 

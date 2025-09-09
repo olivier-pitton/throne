@@ -1,4 +1,4 @@
-package com.dremio.throne;
+package com.dremio.throne.ocr;
 
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -10,7 +10,6 @@ import java.util.logging.Logger;
  */
 public class OCRService {
     
-    private static final Logger LOGGER = Logger.getLogger(OCRService.class.getName());
     private final Tesseract tesseract;
     
     /**
@@ -48,7 +47,7 @@ public class OCRService {
             throw new OCRException("Failed to extract text from image: " + e.getMessage(), e);
         }
     }
-    
+
     /**
      * Custom exception for OCR-related errors.
      */
@@ -56,7 +55,7 @@ public class OCRService {
         public OCRException(String message) {
             super(message);
         }
-        
+
         public OCRException(String message, Throwable cause) {
             super(message, cause);
         }

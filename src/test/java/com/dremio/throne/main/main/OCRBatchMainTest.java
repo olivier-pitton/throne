@@ -1,11 +1,11 @@
-package com.dremio.throne;
+package com.dremio.throne.main.main;
 
+import com.dremio.throne.main.OCRBatchMain;
 import org.junit.Before;
 import org.junit.Test;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.Assert.*;

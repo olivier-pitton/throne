@@ -20,6 +20,11 @@
       <artifactId>tess4j</artifactId>
       <version>5.9.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.18.0</version>
+    </dependency>
 
     <!-- JUnit for testing -->
     <dependency>
@@ -70,7 +75,7 @@
             <configuration>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>com.dremio.throne.OCRBatchMain</mainClass>
+                  <mainClass>com.dremio.throne.main.OCRBatchMain</mainClass>
                 </transformer>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">

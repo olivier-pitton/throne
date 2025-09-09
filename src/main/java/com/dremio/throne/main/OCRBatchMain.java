@@ -1,18 +1,20 @@
-package com.dremio.throne;
+package com.dremio.throne.main;
 
+import com.dremio.throne.db.Player;
+import com.dremio.throne.ocr.OCRFileProcessor;
+import com.dremio.throne.ocr.OCRService;
+import com.dremio.throne.ocr.OCRThroneRecognition;
+import com.dremio.throne.validate.PlayerValidator;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Main class for batch OCR processing using OCRFileProcessor.
@@ -66,10 +68,12 @@ public class OCRBatchMain {
       dateTimeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 
+    color = (color.equalsIgnoreCase("y") ? "yellow" : "red");
+
     LOGGER.info("=== OCR Batch Processing ===");
     LOGGER.info("Image folder: " + imageFolder);
     LOGGER.info("Language: " + language);
-    LOGGER.info("Color filter: " + (color.equalsIgnoreCase("y") ? "yellow" : "red") + " = Suits, other = " + guild);
+    LOGGER.info("Color filter: " + color + " = Suits, other = " + guild);
     LOGGER.info("Guild name: " + guild);
     LOGGER.info("Output CSV: " + outputCsv);
     LOGGER.info("Date/Time: " + dateTimeStr);
@@ -77,13 +81,9 @@ public class OCRBatchMain {
     try {
       OCRBatchMain processor = new OCRBatchMain();
 
-      // Load player classes from class.csv if it exists
-      Map<String, String> playerClasses = PlayerClassLoader.loadPlayerClasses();
-
-      int processedCount = processor.processImages(imageFolder, language, color, guild, outputCsv, dateTimeStr, playerClasses);
+      processor.processImages(imageFolder, language, color, guild, outputCsv, dateTimeStr);
 
       LOGGER.info("✅ Processing complete!");
-      LOGGER.info("Images processed: " + processedCount);
       LOGGER.info("Results written to: " + outputCsv);
 
     } catch (Exception e) {
@@ -93,22 +93,7 @@ public class OCRBatchMain {
     }
   }
 
-
-
-  /**
-   * Process all images in the folder using OCRFileProcessor.
-   *
-   * @param imageFolder Path to folder containing images
-   * @param language OCR language code
-   * @param color Color filter ('y' for yellow, 'r' for red)
-   * @param guild Guild name to use instead of "Enemy"
-   * @param outputCsv Path to output CSV file
-   * @param dateTimeStr Date and time string to prepend to each CSV line
-   * @param playerClasses Map of player names to their classes
-   * @return Number of images processed
-   * @throws Exception if processing fails
-   */
-  public int processImages(String imageFolder, String language, String color, String guild, String outputCsv, String dateTimeStr, Map<String, String> playerClasses) throws Exception {
+  public void processImages(String imageFolder, String language, String color, String guild, String outputCsv, String dateTimeStr) throws Exception {
     File folder = new File(imageFolder);
 
     // Validate input folder
@@ -126,7 +111,7 @@ public class OCRBatchMain {
 
     if (imageFiles == null || imageFiles.length == 0) {
       LOGGER.warning("No image files found in: " + imageFolder);
-      return 0;
+      return;
     }
 
     LOGGER.info("Found " + imageFiles.length + " image files to process");
@@ -134,15 +119,7 @@ public class OCRBatchMain {
     // Create OCR service with specified language
     OCRService ocrService = new OCRService(language);
 
-    // Create temporary file for aggregated OCR output
-    String tempOcrFile = "temp_ocr_output.txt";
-    File tempFile = new File(tempOcrFile);
-    if (tempFile.exists()) {
-      tempFile.delete();
-    }
-
-    int processedCount = 0;
-
+    StringBuilder sb = new StringBuilder();
     // Process each image sequentially
     for (File imageFile : imageFiles) {
       try {
@@ -151,14 +128,15 @@ public class OCRBatchMain {
         // Create OCRFileProcessor for this image
         OCRFileProcessor processor = new OCRFileProcessor(
             imageFile.getAbsolutePath(),
-            ocrService,
-            tempOcrFile
+            ocrService
         );
 
         // Process the image (appends to temp file)
         String result = processor.call();
         if (result != null && !result.trim().isEmpty()) {
-          processedCount++;
+          sb.append(result).append('\n');
+        } else {
+          LOGGER.warning("No OCR output for " + imageFile.getName());
         }
 
       } catch (Exception e) {
@@ -166,114 +144,38 @@ public class OCRBatchMain {
       }
     }
 
+    if (sb.length() == 0) {
+      LOGGER.warning("No OCR output for any images");
+      return;
+    }
+
     // Process aggregated OCR output to CSV
-    if (tempFile.exists() && tempFile.length() > 0) {
-      String aggregatedOcrText = new String(java.nio.file.Files.readAllBytes(tempFile.toPath()));
+    String aggregatedOcrText = sb.toString();
 
-      // Use OCRThroneRecognition to extract and clean data
-      OCRThroneRecognition recognition = new OCRThroneRecognition();
-      List<String> csvLines = recognition.extractToCSV(aggregatedOcrText);
-      List<String> colorInfo = recognition.getColorInfo();
+    // Use OCRThroneRecognition to extract and clean data
+    OCRThroneRecognition recognition = new OCRThroneRecognition(color, guild, dateTimeStr);
+    List<Player> players = recognition.recognize(aggregatedOcrText);
 
-      // Transform CSV lines with date, color mapping, guild, and player classes
-      List<String> transformedLines = transformCsvLines(csvLines, colorInfo, color, guild, dateTimeStr, playerClasses);
+    // Write to output CSV
+    writeCSV(players, outputCsv);
 
-      // Write to output CSV
-      writeCSV(transformedLines, outputCsv);
-
-      // Write errors to file with proper formatting
-      try {
-        recognition.writeErrorsToFile(dateTimeStr, guild, playerClasses);
-      } catch (Exception e) {
-        LOGGER.warning("Failed to write errors.csv: " + e.getMessage());
-      }
-
-      // Write pure Tesseract output to file
-      try {
-        writeTesseractOutput(aggregatedOcrText);
-      } catch (Exception e) {
-        LOGGER.warning("Failed to write tesseract_output.txt: " + e.getMessage());
-      }
-
-      // Validate player statistics
-      PlayerValidator validator = new PlayerValidator();
-      validator.validatePlayers(transformedLines);
-
-      LOGGER.info("Extracted " + csvLines.size() + " valid data lines");
+    // Write errors to file with proper formatting
+    try {
+      recognition.writeErrorsToFile();
+    } catch (Exception e) {
+      LOGGER.warning("Failed to write errors.csv: " + e.getMessage());
     }
 
-    // Clean up temporary file
-    if (tempFile.exists()) {
-      tempFile.delete();
+    // Write pure Tesseract output to file
+    try {
+      writeTesseractOutput(aggregatedOcrText);
+    } catch (Exception e) {
+      LOGGER.warning("Failed to write tesseract_output.txt: " + e.getMessage());
     }
 
-    return processedCount;
-  }
-
-  /**
-   * Transform CSV lines by adding date/time, mapping colors to Suits/Guild, and adding player classes.
-   *
-   * @param csvLines Original CSV lines
-   * @param colorInfo Color information for each line
-   * @param color Color filter ('y' for yellow, 'r' for red)
-   * @param guild Guild name to use instead of "Enemy"
-   * @param dateTimeStr Date and time string to prepend
-   * @param playerClasses Map of player names to their classes
-   * @return Transformed CSV lines
-   */
-  private List<String> transformCsvLines(List<String> csvLines, List<String> colorInfo, String color, String guild, String dateTimeStr, Map<String, String> playerClasses) {
-    List<String> transformedLines = new ArrayList<>();
-
-    for (int i = 0; i < csvLines.size(); i++) {
-      String csvLine = csvLines.get(i);
-      String[] parts = csvLine.split(",");
-      if (parts.length >= 6) {
-        // Extract and clean player name and stats
-        String rawPlayerName = parts[0];
-        String playerName = PlayerNameMatcher.match(rawPlayerName);
-        String[] stats = new String[parts.length - 1];
-        System.arraycopy(parts, 1, stats, 0, parts.length - 1);
-
-        // Determine team based on color filter and detected color
-        String detectedColor = i < colorInfo.size() ? colorInfo.get(i) : "UNKNOWN";
-        String team = determineTeam(detectedColor, color, guild);
-
-        // Get player class from map or default to UNKNOWN (case-insensitive lookup)
-        String playerClass = PlayerClassLoader.getPlayerClass(playerName, playerClasses);
-
-        // Build new CSV line: dateTime,team,playerName,playerClass,stat1,stat2,...
-        StringBuilder newLine = new StringBuilder();
-        newLine.append(dateTimeStr).append(",");
-        newLine.append(team).append(",");
-        newLine.append(playerName).append(",");
-        newLine.append(playerClass);
-        for (String stat : stats) {
-          newLine.append(",").append(stat);
-        }
-
-        transformedLines.add(newLine.toString());
-      }
-    }
-
-    return transformedLines;
-  }
-
-  /**
-   * Determine team (Suits or Guild) based on detected color and filter.
-   *
-   * @param detectedColor Color detected from OCR ("red", "yellow", or "unknown")
-   * @param color Color filter ('y' for yellow, 'r' for red)
-   * @param guild Guild name to use instead of "Enemy"
-   * @return "Suits" if color matches filter, guild name otherwise
-   */
-  private String determineTeam(String detectedColor, String color, String guild) {
-    if (color.equalsIgnoreCase("y") && "yellow".equalsIgnoreCase(detectedColor)) {
-      return "Suits";
-    } else if (color.equalsIgnoreCase("r") && "red".equalsIgnoreCase(detectedColor)) {
-      return "Suits";
-    }
-
-    return guild;
+    // Validate player statistics
+    PlayerValidator validator = new PlayerValidator();
+    validator.validatePlayers(players);
   }
 
   /**
@@ -283,9 +185,10 @@ public class OCRBatchMain {
    * @param filename Output filename
    * @throws IOException if writing fails
    */
-  private void writeCSV(List<String> csvLines, String filename) throws IOException {
+  private void writeCSV(List<Player> csvLines, String filename) throws IOException {
+    List<String> lines = csvLines.stream().sorted().map(Player::toCSV).collect(Collectors.toList());
     try (FileWriter writer = new FileWriter(filename)) {
-      for (String line : csvLines) {
+      for (String line : lines) {
         writer.write(line + "\n");
       }
     }

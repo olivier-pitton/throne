@@ -1,4 +1,4 @@
-package com.dremio.throne;
+package com.dremio.throne.ocr;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -16,29 +16,16 @@ public class OCRFileProcessor implements Callable<String> {
     
     private final String filename;
     private final OCRService ocrService;
-    private final String outputFile;
-    
-    /**
-     * Constructor for OCR file processor.
-     *
-     * @param filename Path to the image file to process
-     * @param ocrService Preconfigured OCR service
-     */
-    public OCRFileProcessor(String filename, OCRService ocrService) {
-        this(filename, ocrService, "tesseract.txt");
-    }
 
     /**
      * Constructor for OCR file processor with custom output file.
      *
      * @param filename Path to the image file to process
      * @param ocrService Preconfigured OCR service
-     * @param outputFile Path to the output file
      */
-    public OCRFileProcessor(String filename, OCRService ocrService, String outputFile) {
+    public OCRFileProcessor(String filename, OCRService ocrService) {
         this.filename = filename;
         this.ocrService = ocrService;
-        this.outputFile = outputFile;
     }
     
     /**
@@ -58,25 +45,6 @@ public class OCRFileProcessor implements Callable<String> {
         LOGGER.info("Processing image: " + filename);
         
         // Extract text using OCR
-        String ocrOutput = ocrService.extractText(imageFile);
-        
-        // Write raw output to tesseract.txt
-        writeToTesseractFile(ocrOutput);
-        
-        LOGGER.info("OCR output written to " + outputFile);
-
-        return ocrOutput;
-    }
-    
-    /**
-     * Append the OCR output to the configured output file.
-     *
-     * @param ocrOutput The raw OCR text to append
-     * @throws IOException if file writing fails
-     */
-    private void writeToTesseractFile(String ocrOutput) throws IOException {
-        try (FileWriter writer = new FileWriter(outputFile, true)) { // true = append mode
-            writer.write(ocrOutput);
-        }
+        return ocrService.extractText(imageFile);
     }
 }
