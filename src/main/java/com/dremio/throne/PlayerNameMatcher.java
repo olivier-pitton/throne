@@ -8,7 +8,7 @@ public class PlayerNameMatcher {
     private static final Set<String> REQUIEM = Set.of("requrem", "requzem");
     private static final Set<String> ELYEAT = Set.of("elveat");
     private static final Set<String> PRAD = Set.of("xpradel");
-    private static final Set<String> FXT = Set.of("fxt1", "fxti", "fxtl");
+    private static final Set<String> FXT = Set.of("fxt1", "fxti", "fxtl", "exti");
 
     public static String match(String name) {
         String lowercase = name.toLowerCase();

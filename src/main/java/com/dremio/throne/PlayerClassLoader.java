@@ -2,6 +2,8 @@ package com.dremio.throne;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -24,6 +26,14 @@ public class PlayerClassLoader {
     public static Map<String, String> loadPlayerClasses() {
         return loadPlayerClasses("class.csv");
     }
+
+    private static File fromURL(URL url) {
+        try {
+            return new File(url.toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
     
     /**
      * Load player classes from specified CSV file.
@@ -36,12 +46,16 @@ public class PlayerClassLoader {
         File classFile = new File(filename);
         
         if (!classFile.exists()) {
-            LOGGER.warning(filename + " file not found in current directory - player classes will be UNKNOWN");
-            return playerClasses;
+            URL resource = PlayerClassLoader.class.getClassLoader().getResource("class.csv");
+            if (resource == null) {
+                LOGGER.warning(filename + " file not found in current directory");
+                System.exit(-1);
+            }
+            classFile = fromURL(resource);
         }
         
         try {
-            List<String> lines = Files.readAllLines(Paths.get(filename));
+            List<String> lines = Files.readAllLines(classFile.toPath());
             
             for (String line : lines) {
                 line = line.trim();

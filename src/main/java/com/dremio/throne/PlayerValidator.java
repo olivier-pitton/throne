@@ -34,7 +34,7 @@ public class PlayerValidator {
 
                     // Skip validation if class is unknown, but collect for errors.csv
                     if (playerClass.equalsIgnoreCase("UNKNOWN")) {
-                        nonValidatedPlayers.add(csvLine);
+                        //nonValidatedPlayers.add(csvLine);
                         continue;
                     }
 
@@ -46,6 +46,7 @@ public class PlayerValidator {
 
                     boolean hasWarning = validatePlayerStats(csvLine, playerName, playerClass, kills, assists, damageDone, damageReceived, healing);
                     if (hasWarning) {
+                        nonValidatedPlayers.add(csvLine);
                         warningCount++;
                     }
                     validatedCount++;

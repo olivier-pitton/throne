@@ -2,10 +2,7 @@ package com.dremio.throne;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -15,7 +12,7 @@ import java.util.logging.Logger;
 public class OCRThroneRecognition {
     
     private static final Logger LOGGER = Logger.getLogger(OCRThroneRecognition.class.getName());
-    private static final String[] COLOR_WORDS = {"rouge", "jaune", "yellow", "red"};
+    private static final Set<String> COLOR_WORDS = Set.of("rouge", "jaune", "yellow", "red");
 
     private List<String> errorLines = new ArrayList<>();
     private List<String> colorInfo = new ArrayList<>(); // Track color for each line
@@ -195,11 +192,9 @@ public class OCRThroneRecognition {
     private int findColorColumn(String[] columns) {
         for (int i = 0; i < columns.length; i++) {
             String column = columns[i].toLowerCase();
-            for (String color : COLOR_WORDS) {
-                if (column.contains(color)) {
-                    return i;
-                }
-            }
+           if (COLOR_WORDS.contains(column)) {
+               return i;
+           }
         }
         return -1;
     }
