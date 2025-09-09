@@ -1,5 +1,8 @@
 package com.dremio.throne;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -12,13 +15,15 @@ public class PlayerValidator {
     
     /**
      * Validate all players and log warnings for suspicious statistics.
-     * 
+     * Also append non-validated players to errors.csv file.
+     *
      * @param csvLines List of CSV lines to validate (format: date,team,playerName,playerClass,kills,assists,damageDone,damageReceived,healing)
      */
     public void validatePlayers(List<String> csvLines) {
         int validatedCount = 0;
         int warningCount = 0;
-        
+        List<String> nonValidatedPlayers = new ArrayList<>();
+
         for (String csvLine : csvLines) {
             String[] parts = csvLine.split(",");
             if (parts.length >= 9) {
@@ -27,8 +32,9 @@ public class PlayerValidator {
                     String playerName = PlayerNameMatcher.match(rawPlayerName);
                     String playerClass = parts[3].toLowerCase();
 
-                    // Skip validation if class is unknown
+                    // Skip validation if class is unknown, but collect for errors.csv
                     if (playerClass.equalsIgnoreCase("UNKNOWN")) {
+                        nonValidatedPlayers.add(csvLine);
                         continue;
                     }
 
@@ -49,8 +55,17 @@ public class PlayerValidator {
                 }
             }
         }
-        
-        LOGGER.info("Player validation complete: " + validatedCount + " players validated, " + warningCount + " warnings logged");
+
+        // Append non-validated players to errors.csv
+        if (!nonValidatedPlayers.isEmpty()) {
+            try {
+                appendNonValidatedPlayersToErrors(nonValidatedPlayers);
+            } catch (IOException e) {
+                LOGGER.warning("Failed to append non-validated players to errors.csv: " + e.getMessage());
+            }
+        }
+
+        LOGGER.info("Player validation complete: " + validatedCount + " players validated, " + warningCount + " warnings logged, " + nonValidatedPlayers.size() + " non-validated players appended to errors.csv");
     }
     
     /**
@@ -156,5 +171,26 @@ public class PlayerValidator {
         } catch (NumberFormatException e) {
             return 0L;
         }
+    }
+
+    /**
+     * Append non-validated players to errors.csv file with separator lines.
+     *
+     * @param nonValidatedPlayers List of CSV lines for players with UNKNOWN class
+     * @throws IOException if file writing fails
+     */
+    private void appendNonValidatedPlayersToErrors(List<String> nonValidatedPlayers) throws IOException {
+        try (FileWriter writer = new FileWriter("errors.csv", true)) { // Append mode
+            // Add two separator lines
+            writer.write("\n");
+            writer.write("\n");
+
+            // Add all non-validated players
+            for (String playerLine : nonValidatedPlayers) {
+                writer.write(playerLine + "\n");
+            }
+        }
+
+        LOGGER.info("Appended " + nonValidatedPlayers.size() + " non-validated players to errors.csv");
     }
 }
